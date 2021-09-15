@@ -11,6 +11,8 @@ enum ServerStatus {
 class SocketService with ChangeNotifier {
   ServerStatus _serverStatus = ServerStatus.Connecting;
 
+  get serverStatus => _serverStatus;
+
   SocketService() {
     _initConfig();
   }
@@ -23,9 +25,13 @@ class SocketService with ChangeNotifier {
             .setTransports(['websocket']) // for Flutter or Dart VM
             .build());
     socket.onConnect((_) {
-      print('connect');
+      _serverStatus = ServerStatus.Online;
+      notifyListeners();
     });
 
-    socket.onDisconnect((_) => print('disconnect'));
+    socket.onDisconnect((_) {
+      _serverStatus = ServerStatus.Offline;
+      notifyListeners();
+    });
   }
 }
