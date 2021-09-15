@@ -10,8 +10,13 @@ enum ServerStatus {
 
 class SocketService with ChangeNotifier {
   ServerStatus _serverStatus = ServerStatus.Connecting;
+  late IO.Socket _socket;
 
-  get serverStatus => _serverStatus;
+  ServerStatus get serverStatus => _serverStatus;
+  
+  IO.Socket get socket => _socket;
+  Function get emit => _socket.emit;
+
 
   SocketService() {
     _initConfig();
@@ -19,25 +24,25 @@ class SocketService with ChangeNotifier {
 
   void _initConfig() {
     // Dart client
-    IO.Socket socket = IO.io(
+     _socket = IO.io(
         'http://10.0.2.2:3000',
         IO.OptionBuilder()
             .setTransports(['websocket']) // for Flutter or Dart VM
             .build());
-    socket.onConnect((_) {
+    _socket.onConnect((_) {
       _serverStatus = ServerStatus.Online;
       notifyListeners();
     });
 
-    socket.onDisconnect((_) {
+    _socket.onDisconnect((_) {
       _serverStatus = ServerStatus.Offline;
       notifyListeners();
     });
 
-    socket.on('new-message', (payload) {
-      print('new message');
-      print(payload.containsKey('name') ? payload['name'] : null);
-      print(payload.containsKey('message') ? payload['message'] : null);
-    });
+    // socket.on('new-message', (payload) {
+    //   print('new message');
+    //   print(payload.containsKey('name') ? payload['name'] : null);
+    //   print(payload.containsKey('message') ? payload['message'] : null);
+    // });
   }
 }
