@@ -20,11 +20,13 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     final socketService = Provider.of<SocketService>(context, listen: false);
 
-    socketService.socket.on('active-bands', (payload) {
-      bands = (payload as List).map((band) => Band.fromMap(band)).toList();
-      setState(() {});
-    });
+    socketService.socket.on('active-bands', _handleActiveBands);
     super.initState();
+  }
+
+  _handleActiveBands(dynamic payload) {
+    bands = (payload as List).map((band) => Band.fromMap(band)).toList();
+    setState(() {});
   }
 
   @override
@@ -74,9 +76,8 @@ class _HomePageState extends State<HomePage> {
     return Dismissible(
       key: Key(band.id),
       direction: DismissDirection.startToEnd,
-      onDismissed: (_) {
-        socketService.socket.emit('delete-band', {'id': band.id});
-      },
+      onDismissed: (_) =>
+          socketService.socket.emit('delete-band', {'id': band.id}),
       background: Container(
         padding: const EdgeInsets.only(left: 8.0),
         color: Colors.red,
@@ -95,9 +96,7 @@ class _HomePageState extends State<HomePage> {
         ),
         title: Text(band.name),
         trailing: Text('${band.votes}', style: const TextStyle(fontSize: 20)),
-        onTap: () {
-          socketService.emit('vote-band', {'id': band.id});
-        },
+        onTap: () => socketService.emit('vote-band', {'id': band.id}),
       ),
     );
   }
@@ -108,43 +107,39 @@ class _HomePageState extends State<HomePage> {
     if (Platform.isAndroid) {
       return showDialog(
         context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('New Band name:'),
-            content: TextField(
-              controller: textController,
-            ),
-            actions: [
-              MaterialButton(
-                  child: const Text('Add'),
-                  elevation: 1,
-                  textColor: Colors.blue,
-                  onPressed: () => addBandToList(textController.text))
-            ],
-          );
-        },
+        builder: (_) => AlertDialog(
+          title: const Text('New Band name:'),
+          content: TextField(
+            controller: textController,
+          ),
+          actions: [
+            MaterialButton(
+                child: const Text('Add'),
+                elevation: 1,
+                textColor: Colors.blue,
+                onPressed: () => addBandToList(textController.text))
+          ],
+        ),
       );
     } else {
       showCupertinoDialog(
         context: context,
-        builder: (_) {
-          return CupertinoAlertDialog(
-            title: const Text('New Band name:'),
-            content: CupertinoTextField(
-              controller: textController,
-            ),
-            actions: [
-              CupertinoDialogAction(
-                  isDefaultAction: true,
-                  child: const Text('Add'),
-                  onPressed: () => addBandToList(textController.text)),
-              CupertinoDialogAction(
-                  isDestructiveAction: true,
-                  child: const Text('Dismiss'),
-                  onPressed: () => Navigator.pop(context))
-            ],
-          );
-        },
+        builder: (_) => CupertinoAlertDialog(
+          title: const Text('New Band name:'),
+          content: CupertinoTextField(
+            controller: textController,
+          ),
+          actions: [
+            CupertinoDialogAction(
+                isDefaultAction: true,
+                child: const Text('Add'),
+                onPressed: () => addBandToList(textController.text)),
+            CupertinoDialogAction(
+                isDestructiveAction: true,
+                child: const Text('Dismiss'),
+                onPressed: () => Navigator.pop(context))
+          ],
+        ),
       );
     }
   }
