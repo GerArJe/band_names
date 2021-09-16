@@ -14,12 +14,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<Band> bands = [
-    // Band(id: '1', name: 'Metalica', votes: 5),
-    // Band(id: '2', name: 'Queen', votes: 5),
-    // Band(id: '3', name: 'Heroes', votes: 5),
-    // Band(id: '4', name: 'Bon', votes: 5),
-  ];
+  List<Band> bands = [];
 
   @override
   void initState() {
@@ -157,9 +152,8 @@ class _HomePageState extends State<HomePage> {
 
   void addBandToList(String name) {
     if (name.length > 1) {
-      bands.add(Band(id: DateTime.now().toString(), name: name));
-
-      setState(() {});
+      final socketService = Provider.of<SocketService>(context, listen: false);
+      socketService.socket.emit('add-band', {'name': name});
     }
 
     Navigator.pop(context);
