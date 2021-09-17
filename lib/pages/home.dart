@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:pie_chart/pie_chart.dart';
 import 'package:provider/provider.dart';
 
 import 'package:band_names/models/band.dart';
@@ -57,10 +58,17 @@ class _HomePageState extends State<HomePage> {
           )
         ],
       ),
-      body: ListView.builder(
-        itemCount: bands.length,
-        itemBuilder: (BuildContext context, int index) =>
-            _bandTile(bands[index]),
+      body: Column(
+        children: [
+          _showGraph(),
+          Expanded(
+            child: ListView.builder(
+              itemCount: bands.length,
+              itemBuilder: (BuildContext context, int index) =>
+                  _bandTile(bands[index]),
+            ),
+          )
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: addNewBand,
@@ -151,5 +159,57 @@ class _HomePageState extends State<HomePage> {
     }
 
     Navigator.pop(context);
+  }
+
+  Widget _showGraph() {
+    Map<String, double> dataMap = new Map();
+    final List<Color> colorList = [
+      Colors.blue.shade50,
+      Colors.blue.shade200,
+      Colors.pink.shade50,
+      Colors.pink.shade200,
+      Colors.yellow.shade50,
+      Colors.yellow.shade200,
+    ];
+
+    if (bands.isNotEmpty) {
+      bands.forEach((band) {
+        dataMap.putIfAbsent(band.name, () => band.votes.toDouble());
+      });
+    }
+
+    return dataMap.isNotEmpty
+        ? Container(
+            padding: const EdgeInsets.only(top: 10),
+            width: double.infinity,
+            height: 200,
+            child: PieChart(
+              dataMap: dataMap,
+              animationDuration: const Duration(milliseconds: 800),
+              chartLegendSpacing: 32,
+              chartRadius: MediaQuery.of(context).size.width / 3.2,
+              colorList: colorList,
+              initialAngleInDegree: 0,
+              chartType: ChartType.disc,
+              ringStrokeWidth: 32,
+              // centerText: "HYBRID",
+              legendOptions: const LegendOptions(
+                showLegendsInRow: false,
+                legendPosition: LegendPosition.right,
+                showLegends: true,
+                legendShape: BoxShape.circle,
+                legendTextStyle: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              chartValuesOptions: const ChartValuesOptions(
+                showChartValueBackground: false,
+                showChartValues: true,
+                showChartValuesInPercentage: true,
+                showChartValuesOutside: false,
+                decimalPlaces: 0,
+              ),
+            ))
+        : const LinearProgressIndicator();
   }
 }
